@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Barcode Detection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Barcode Detection</h1>
+    <form action="/detect" method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" id="imageInput" accept="image/*">
+        <input type="submit" value="Detect Barcode">
+    </form>
+    <button id="cameraButton">Open Camera</button>
+    <canvas id="cameraCanvas" style="display: none;"></canvas>
+    <script>
+        // Capture photo from camera and set it as the image input value
+        document.getElementById('cameraButton').addEventListener('click', function() {
+            var canvas = document.getElementById('cameraCanvas');
+            var context = canvas.getContext('2d');
+
+            // Access the camera and capture a photo
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    // Display the video stream in the canvas
+                    var video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.onloadedmetadata = function(e) {
+                        video.play();
+                        // Wait for the video to start playing to capture a frame
+                        setTimeout(function() {
+                            // Draw the video frame on the canvas
+                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            // Stop the video stream
+                            video.pause();
+                            stream.getTracks().forEach(function(track) {
+                                track.stop();
+                            });
+                            // Convert the canvas image to a data URL
+                            var imageDataUrl = canvas.toDataURL('image/jpeg');
+                            // Set the image input value to the captured photo
+                            document.getElementById('imageInput').value = imageDataUrl;
+                        }, 100);
+                    };
+                })
+                .catch(function(err) {
+                    console.error('Error accessing the camera', err);
+                });
+        });
+    </script>
+</body>
+</html>
